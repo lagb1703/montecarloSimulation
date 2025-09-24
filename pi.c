@@ -23,7 +23,7 @@ Point *makePoint()
 
 fl montecarloPi(UI32 n)
 {
-    fl circle = 0;
+    UI32 circle = 0;
     UI32 total = n;
     while (n--)
     {
@@ -37,7 +37,7 @@ fl montecarloPi(UI32 n)
             circle++;
         }
     }
-    return 4.0 * circle / total;
+    return 4.0 * ((fl) circle) / total;
 }
 
 int main(int argc, char **argv)
