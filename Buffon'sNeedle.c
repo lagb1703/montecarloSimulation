@@ -19,13 +19,11 @@ fl needlePi(UI32 n)
     {
         fl angle = 0.5 * sin(MAXANGLE * ((fl)rand()) / RAND_MAX);
         fl x = l * ((fl)rand()) / RAND_MAX;
-        // printf("%.6f %.6f\n", angle, x);
         if (x - angle <= 0 || x + angle >= l)
         {
             intersects++;
         }
     }
-    // printf("intersects: %i\n", intersects);
     if (intersects == 0)
         return 0;
     return ((fl)total) / intersects;
@@ -37,8 +35,12 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+    struct timespec start, end;
     srand(time(NULL));
+    clock_gettime(CLOCK_MONOTONIC, &start);
     UI32 n = (UI32)atoi(argv[1]);
-    printf("%.6f", needlePi(n));
+    needlePi(n);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     return 0;
 }

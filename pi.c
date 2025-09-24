@@ -7,33 +7,18 @@
 #define ARGSNUM 2
 #define UI32 uint32_t
 
-typedef struct
-{
-    fl x, y;
-} Point;
-
-Point *makePoint()
-{
-    Point *p = (Point *)malloc(sizeof(Point));
-    p->x = ((double)rand()) / RAND_MAX;
-    p->y = ((double)rand()) / RAND_MAX;
-    // printf("%.6f %.6f\n", p->x, p->y);
-    return p;
-}
-
 fl montecarloPi(UI32 n)
 {
     UI32 circle = 0;
     UI32 total = n;
+    fl x, y;
     while (n--)
     {
-        Point *p = makePoint();
-        fl r = (p->x*p->x + p->y*p->y);
-        // printf("%.6f\n", r);
-        free(p);
-        if (r <= 1.0)
+        y = ((double)rand()) / RAND_MAX;
+        x = ((double)rand()) / RAND_MAX;
+        fl r = (x*x + y*y);
+        if (r <= 1)
         {
-            // printf("circle\n");
             circle++;
         }
     }
@@ -46,8 +31,13 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+    struct timespec start, end;
     srand(time(NULL));
     UI32 n = (UI32)atoi(argv[1]);
-    printf("%.6f", montecarloPi(n));
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    printf("%.6f\n", montecarloPi(n));
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    printf("%.6f", elapsed);
     return 0;
 }
