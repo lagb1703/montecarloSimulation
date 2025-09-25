@@ -15,7 +15,7 @@
 #define SHM_NAME "/array"
 #define fl double
 #define ARGSNUM 3
-#define UI32 uint32_t
+#define UI32 uint64_t
 #define MAXANGLE 3.141592653589793
 #define L 1
 #define l 2
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     // UI32 nThreads = 1;
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("%.6f\n", pi(n, nThreads));
+    pi(n, nThreads);
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     printf("%.6f", elapsed);

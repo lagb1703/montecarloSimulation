@@ -14,7 +14,7 @@
 #define SHM_NAME "/array"
 #define fl double
 #define ARGSNUM 3
-#define UI32 uint32_t
+#define UI32 uint64_t
 
 typedef struct
 {
