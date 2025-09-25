@@ -6,6 +6,12 @@
 #include <math.h>
 #include "thread.c"
 #include "rng.c"
+#include <semaphore.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #define fl double
 #define ARGSNUM 3
 #define UI32 uint32_t

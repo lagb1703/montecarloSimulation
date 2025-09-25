@@ -1,61 +1,97 @@
 #include "stdint.h"
 #include "malloc.h"
 #include <stdlib.h>
+#include <unistd.h>
+#include <stdalign.h>
 #include "time.h"
 #include <stdio.h>
-#include "thread.c"
+#include <fcntl.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
 #include "rng.c"
+#define SHM_NAME "/array"
 #define fl double
 #define ARGSNUM 3
 #define UI32 uint32_t
 
 typedef struct
 {
-    UI32 n;
-    UI32 result;
+    UI32 i;
     rng128_t rng;
 } Data;
 
-void montecarloPi(void *d)
+size_t round_up(size_t x, size_t a) { return (x + a - 1) & ~(a - 1); }
+
+UI32 *createSharedMemory(UI32 n, UI32 nProcess)
 {
-    Data *data = (Data *)d;
-    UI32 circle = 0;
+    int shm_fd;
+    UI32 *ptr;
+    size_t bytesA = (nProcess + 1) * sizeof(UI32);
+    shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_fd, bytesA);
+    ptr = mmap(NULL, bytesA, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    close(shm_fd);
+    return ptr;
+}
+
+void deleteSharedMemory(UI32 *d, UI32 nProcess)
+{
+    size_t bytesA = (nProcess + 1) * sizeof(UI32);
+    munmap(d, bytesA);
+    shm_unlink(SHM_NAME);
+}
+
+void montecarloPi(Data *data, UI32 *arrayResults)
+{
+    UI32 circle = 0, n = arrayResults[0];
     fl x, y;
-    for (UI32 i = 0; i < data->n; i++)
+    for (UI32 i = 0; i < n; i++)
     {
         fl x = rng_next_double01(&data->rng);
         fl y = rng_next_double01(&data->rng);
         fl r = x * x + y * y;
-        if (r <= 1.0) circle++;
+        if (r <= 1.0)
+            circle++;
     }
-    data->result = circle;
-    killMyThread(NULL);
+    arrayResults[data->i] = circle;
 }
 
-fl pi(UI32 n, UI32 nThreads)
+fl pi(UI32 n, UI32 nProcess)
 {
-    UI32 result = 0;
-    Data *data = (Data *)malloc(sizeof(Data) * nThreads);
-    Thread *t = (Thread *)malloc(sizeof(Thread) * nThreads);
-    UI32 space = n / nThreads;
-    uint64_t base_seed = (uint64_t)time(NULL) ^ (uintptr_t)data ^ (uintptr_t)&n;
-    data[0].n = space + n % nThreads;
-    rng_seed(&data[0].rng, base_seed + 0x9E3779B97F4A7C15ULL * (uint64_t)(0 + 1));
-    createThread(montecarloPi, &data[0], &t[0]);
-    for (UI32 i = 1; i < nThreads; i++)
+    UI32 *array = createSharedMemory(n, nProcess);
+    pid_t *p = (pid_t *)malloc(sizeof(pid_t) * nProcess);
+    int parentId = getpid();
+    uint64_t base_seed = (uint64_t)time(NULL) ^ (uintptr_t)&n;
+    array[0] = n / nProcess;
+    UI32 i = 0;
+    for (; i < nProcess && parentId == getpid(); i++)
+        p[i] = fork();
+    Data *data = (Data *)malloc(sizeof(Data));
+    if (parentId == getpid())
     {
-        data[i].n = space;
-        rng_seed(&data[i].rng, base_seed + 0x9E3779B97F4A7C15ULL * (uint64_t)(i + 1));
-        createThread(montecarloPi, &data[i], &t[i]);
+        UI32 result = 0;
+        UI32 j = 0;
+        for (; j < nProcess; j++)
+        {
+            waitpid(p[j], NULL, 0);
+            printf("%u\n", (unsigned)array[j + 1]);
+            result += array[j + 1];
+        }
+        array[0] = n % nProcess;
+        data->i = 0;
+        montecarloPi(data, array);
+        result += array[0];
+        free(p);
+        deleteSharedMemory(array, nProcess);
+        return 4.0 * ((fl)result) / n;
     }
-    for (UI32 i = 0; i < nThreads; i++)
-    {
-        joinThread(t[i]);
-        result += data[i].result;
-    }
+    data->i = i;
+    rng_seed(&data->rng, base_seed + 0x9E3779B97F4A7C15ULL * (uint64_t)(i));
+    montecarloPi(data, array);
     free(data);
-    free(t);
-    return 4.0 * ((fl) result)/n;
+    exit(0);
 }
 
 int main(int argc, char **argv)
@@ -70,7 +106,7 @@ int main(int argc, char **argv)
     // UI32 nThreads = 1;
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    pi(n, nThreads);
+    printf("%.6f\n", pi(n, nThreads));
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     printf("%.6f", elapsed);
