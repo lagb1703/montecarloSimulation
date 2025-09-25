@@ -30,7 +30,6 @@ void montecarloPi(void *d)
         if (r <= 1.0) circle++;
     }
     data->result = circle;
-    printf("%i\n", circle);
     killMyThread(NULL);
 }
 
@@ -53,7 +52,6 @@ fl pi(UI32 n, UI32 nThreads)
     for (UI32 i = 0; i < nThreads; i++)
     {
         joinThread(t[i]);
-        // printf("result = %i\n", *(data[i].result));
         result += data[i].result;
     }
     free(data);
@@ -72,11 +70,10 @@ int main(int argc, char **argv)
     // UI32 n = 10;
     // UI32 nThreads = 1;
     struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     printf("%.6f", pi(n, nThreads));
-    // clock_gettime(CLOCK_MONOTONIC, &start);
-    // printf("%.6f\n", 4.0 * result / n);
-    // clock_gettime(CLOCK_MONOTONIC, &end);
+    clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-    // printf("%.6f", elapsed);
+    printf("%.6f", elapsed);
     return 0;
 }
