@@ -18,7 +18,6 @@ typedef struct
 
 void montecarloPi(void *d)
 {
-    srand(time(NULL));
     Data *data = (Data *)d;
     UI32 circle = 0;
     fl x, y;
@@ -71,7 +70,7 @@ int main(int argc, char **argv)
     // UI32 nThreads = 1;
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("%.6f", pi(n, nThreads));
+    pi(n, nThreads);
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     printf("%.6f", elapsed);
