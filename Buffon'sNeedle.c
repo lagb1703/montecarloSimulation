@@ -8,7 +8,7 @@
 #include "rng.c"
 #define fl double
 #define ARGSNUM 3
-#define UI32 uint32_t
+#define UI32 uint64_t
 #define MAXANGLE 3.141592653589793
 #define L 1
 #define l 2
@@ -71,8 +71,8 @@ int main(int argc, char **argv)
     {
         return 1;
     }
-    UI32 n = (UI32)atoi(argv[1]);
-    UI32 nThreads = (UI32)atoi(argv[2]);
+    UI32 n = (UI32)atoll(argv[1]);
+    UI32 nThreads = (UI32)atoll(argv[2]);
     // UI32 n = 10000;
     // UI32 nThreads = 1;
     struct timespec start, end;

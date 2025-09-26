@@ -7,7 +7,7 @@
 #include "rng.c"
 #define fl double
 #define ARGSNUM 3
-#define UI32 uint32_t
+#define UI32 uint64_t
 
 typedef struct
 {
@@ -64,8 +64,8 @@ int main(int argc, char **argv)
     {
         return 1;
     }
-    UI32 n = (UI32)atoi(argv[1]);
-    UI32 nThreads = (UI32)atoi(argv[2]);
+    UI32 n = (UI32)atoll(argv[1]);
+    UI32 nThreads = (UI32)atoll(argv[2]);
     // UI32 n = 10;
     // UI32 nThreads = 1;
     struct timespec start, end;
