@@ -6,7 +6,7 @@
 #include <math.h>
 #define fl double
 #define ARGSNUM 2
-#define UI32 uint32_t
+#define UI32 uint64_t
 #define MAXANGLE 3.141592653589793
 #define L 1
 #define l 2
@@ -35,12 +35,13 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+    UI32 n = (UI32)atoll(argv[1]);
     struct timespec start, end;
     srand(time(NULL));
     clock_gettime(CLOCK_MONOTONIC, &start);
-    UI32 n = (UI32)atoi(argv[1]);
     needlePi(n);
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    printf("%.6f", elapsed);
     return 0;
 }

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #define fl double
 #define ARGSNUM 2
-#define UI32 uint32_t
+#define UI32 uint64_t
 
 fl montecarloPi(UI32 n)
 {
@@ -31,11 +31,11 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+    UI32 n = (UI32)atoll(argv[1]);
     struct timespec start, end;
     srand(time(NULL));
-    UI32 n = (UI32)atoi(argv[1]);
     clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("%.6f\n", montecarloPi(n));
+    montecarloPi(n);
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     printf("%.6f", elapsed);
